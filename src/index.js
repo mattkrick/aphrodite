@@ -76,10 +76,7 @@ const css = (...styleDefinitions) => {
     return injectAndGetClassName(styleDefinitions);
 };
 
-const injectedGlobals = new WeakSet();
 const cssGlobal = (globalStyles) => {
-    if (injectedGlobals.has(globalStyles)) return;
-    injectedGlobals.add(globalStyles);
     const selectors = Object.keys(globalStyles);
     for (let i = 0; i < selectors.length; i++) {
         const name = selectors[i];
