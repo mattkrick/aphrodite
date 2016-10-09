@@ -14,7 +14,7 @@ const fontFamily = (val) => {
   } else if (val && typeof val === "object") {
     const {fontFamily, fontStyle, fontWeight} = val;
     const key = `${fontFamily}-${fontWeight || 400}${fontStyle}`;
-    injectStyleOnce(key, "@font-face", [val], false);
+    injectStyleOnce(key, "@font-face", [val]);
     return fontFamily;
   } else {
     return val;

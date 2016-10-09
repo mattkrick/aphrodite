@@ -1,7 +1,6 @@
 import asap from 'asap';
-
 import {generateCSS} from './generate';
-import {flattenDeep, hashObject} from './util';
+import {flattenDeep} from './util';
 
 // The current <style> tag we are inserting into, or null if we haven't
 // inserted anything yet. We could find this each time using
@@ -51,7 +50,7 @@ let injectionBuffer = "";
 // already be flushed, or because we are statically buffering on the server.
 let isBuffering = false;
 
-const injectGeneratedCSSOnce = (key, generatedCSS) => {
+export const injectGeneratedCSSOnce = (key, generatedCSS) => {
   if (!alreadyInjected[key]) {
     if (!isBuffering) {
       // We should never be automatically buffering on the server (or any
@@ -70,7 +69,7 @@ const injectGeneratedCSSOnce = (key, generatedCSS) => {
     injectionBuffer += generatedCSS;
     alreadyInjected[key] = true;
   }
-}
+};
 
 export const injectStyleOnce = (key, selector, definitions) => {
   if (!alreadyInjected[key]) {
@@ -128,20 +127,22 @@ export const addRenderedClassNames = (classNames) => {
  *     return value of StyleSheet.create().
  */
 export const injectAndGetClassName = (styleDefinitions) => {
-  styleDefinitions = flattenDeep(styleDefinitions);
+  const flatStyleDefinitions = flattenDeep(styleDefinitions);
 
   // Filter out falsy values from the input, to allow for
   // `css(a, test && c)`
-  const validDefinitions = styleDefinitions.filter((def) => def);
+  const validDefinitions = flatStyleDefinitions.filter(Boolean);
 
   // Break if there aren't any valid styles.
   if (validDefinitions.length === 0) {
     return "";
   }
 
+  // generate an short, opaque compound className
+  // const className = hashObject(validDefinitions.map(s => s._name));
   const className = validDefinitions.map(s => s._name).join("-o_O-");
-  injectStyleOnce(className, `.${className}`,
-    validDefinitions.map(d => d._definition));
-
+  const rawRulesets = validDefinitions.map(d => d._definition);
+  injectGeneratedCSSOnce(className, rawRulesets);
   return className;
-}
+};
+
