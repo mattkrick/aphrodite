@@ -4,6 +4,8 @@ import {
     objectToPairs, kebabifyStyleName, recursiveMerge, stringifyValue,
     flatten
 } from './util';
+import stringHandlers from './stringHandlers';
+
 /**
  * Generate CSS for a selector and some styles.
  *
@@ -14,14 +16,13 @@ import {
  *     with.
  * @param {Object} styleTypes: A list of properties of the return type of
  *     StyleSheet.create, e.g. [styles.red, styles.blue].
- * @param stringHandlers: See `generateCSSRuleset`
  *
  * To actually generate the CSS special-construct-less styles are passed to
  * `generateCSSRuleset`.
  *
  * For instance, a call to
  *
- *     generateCSSInner(".foo", {
+ *     generateCSS(".foo", {
  *       color: "red",
  *       "@media screen": {
  *         height: 20,
@@ -47,7 +48,7 @@ import {
  *     generateCSSRuleset(".foo", { height: 20 }, ...)
  *     generateCSSRuleset(".foo:hover", { backgroundColor: "black" }, ...)
  */
-export const generateCSS = (selector, styleTypes, stringHandlers) => {
+export const generateCSS = (selector, styleTypes) => {
     const merged = styleTypes.reduce(recursiveMerge);
 
     const declarations = {};
@@ -65,15 +66,13 @@ export const generateCSS = (selector, styleTypes, stringHandlers) => {
     });
 
     return (
-        generateCSSRuleset(selector, declarations, stringHandlers) +
+        generateCSSRuleset(selector, declarations) +
         Object.keys(pseudoStyles).map(pseudoSelector => {
             return generateCSSRuleset(selector + pseudoSelector,
-                                      pseudoStyles[pseudoSelector],
-                                      stringHandlers);
+                                      pseudoStyles[pseudoSelector]);
         }).join("") +
         Object.keys(mediaQueries).map(mediaQuery => {
-            const ruleset = generateCSS(selector, [mediaQueries[mediaQuery]],
-                stringHandlers);
+            const ruleset = generateCSS(selector, [mediaQueries[mediaQuery]]);
             return `${mediaQuery}{${ruleset}}`;
         }).join("")
     );
@@ -85,13 +84,13 @@ export const generateCSS = (selector, styleTypes, stringHandlers) => {
  *
  * See generateCSSRuleset for usage and documentation of paramater types.
  */
-const runStringHandlers = (declarations, stringHandlers) => {
+const runStringHandlers = (declarations) => {
     const result = {};
 
     Object.keys(declarations).forEach(key => {
         // If a handler exists for this particular key, let it interpret
         // that value first before continuing
-        if (stringHandlers && stringHandlers.hasOwnProperty(key)) {
+        if (stringHandlers[key]) {
             result[key] = stringHandlers[key](declarations[key]);
         } else {
             result[key] = declarations[key];
@@ -114,9 +113,6 @@ const runStringHandlers = (declarations, stringHandlers) => {
  * @param {string} selector: the selector associated with the ruleset
  * @param {Object} declarations: a map from camelCased CSS property name to CSS
  *     property value.
- * @param {Object.<string, function>} stringHandlers: a map from camelCased CSS
- *     property name to a function which will map the given value to the value
- *     that is output.
  * @returns {string} A string of raw CSS.
  *
  * Examples:
@@ -130,9 +126,8 @@ const runStringHandlers = (declarations, stringHandlers) => {
  *    generateCSSRuleset(".blah:hover", { color: "red" })
  *    -> ".blah:hover{color: red}"
  */
-export const generateCSSRuleset = (selector, declarations, stringHandlers) => {
-    const handledDeclarations = runStringHandlers(
-        declarations, stringHandlers);
+export const generateCSSRuleset = (selector, declarations) => {
+    const handledDeclarations = runStringHandlers(declarations);
 
     const prefixedDeclarations = prefixAll(handledDeclarations);
 

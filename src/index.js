@@ -4,9 +4,21 @@ import {
     reset, startBuffering, flushToString,
     addRenderedClassNames, getRenderedClassNames
 } from './inject';
+import {generateCSS} from './generate';
+
 
 const StyleSheet = {
-    create(sheetDefinition) {
+    create: (sheetDefinition) => {
+        const prefixedRuleset = {};
+        const rawSelectors = Object.keys(sheetDefinition);
+        for (let i = 0; i < rawSelectors.length; i++) {
+            const rawSelector = rawSelectors[i];
+            const rawRuleset = sheetDefinition[rawSelector];
+            prefixedRuleset[rawSelector] = {
+                _name: `${rawSelector}_${hashObject(rawRuleset)}`,
+                _definition: generateCSS(selector, rawRulesets)
+            }
+        }
         return mapObj(sheetDefinition, ([key, val]) => {
             return [key, {
                 // TODO(emily): Make a 'production' mode which doesn't prepend

@@ -140,7 +140,7 @@ export const stringifyValue = (key, prop) => {
  * @param {string} str ASCII only
  * @return {string} Base 36 encoded hash result
  */
-function murmurhash2_32_gc(str) {
+const murmurhash2_32_gc = (str) => {
   let l = str.length;
   let h = l;
   let i = 0;
@@ -177,7 +177,7 @@ function murmurhash2_32_gc(str) {
   h ^= h >>> 15;
 
   return (h >>> 0).toString(36);
-}
+};
 
 // Hash a javascript object using JSON.stringify. This is very fast, about 3
 // microseconds on my computer for a sample object:
