@@ -198,34 +198,6 @@ describe('injection', () => {
         });
     });
 
-    describe('flushToString', () => {
-        it('returns the buffered styles', () => {
-            startBuffering();
-
-            css(sheet.red);
-            css(sheet.blue);
-
-            const styles = flushToString();
-
-            assert.include(styles, `.${sheet.red._name}{`);
-            assert.include(styles, `.${sheet.blue._name}{`);
-            assert.match(styles, /color:red/);
-            assert.match(styles, /color:blue/);
-        });
-
-        it('clears the injection buffer', () => {
-            startBuffering();
-
-            css(sheet.red);
-            css(sheet.blue);
-
-            assert.notEqual(flushToString(), "");
-
-            startBuffering();
-            assert.equal(flushToString(), "");
-        });
-    });
-
     describe('getRenderedClassNames', () => {
         it('returns classes that have been rendered', () => {
             css(sheet.red);

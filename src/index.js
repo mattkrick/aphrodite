@@ -6,7 +6,17 @@ import {
 } from './inject';
 
 const StyleSheet = {
-    create(sheetDefinition) {
+    create: (sheetDefinition) => {
+        const prefixedRuleset = {};
+        const rawSelectors = Object.keys(sheetDefinition);
+        for (let i = 0; i < rawSelectors.length; i++) {
+            const rawSelector = rawSelectors[i];
+            const rawDeclarations = sheetDefinition[rawSelector];
+            prefixedRuleset[rawSelector] = {
+              _name: `${rawSelector}_${hashObject(rawDeclarations)}`,
+            _definition: generateCSS(selector, rawRulesets, atRuleHandlers)
+            }
+        }
         return mapObj(sheetDefinition, ([key, val]) => {
             return [key, {
                 // TODO(emily): Make a 'production' mode which doesn't prepend
@@ -73,26 +83,12 @@ const StyleSheetTestUtils = {
 };
 
 const css = (...styleDefinitions) => {
-    const useImportant = true;   // Append !important to all style definitions
-    return injectAndGetClassName(useImportant, styleDefinitions);
-};
-
-const injectedGlobals = new WeakSet();
-const cssGlobal = (globalStyles) => {
-    if (injectedGlobals.has(globalStyles)) return;
-    injectedGlobals.add(globalStyles);
-    const selectors = Object.keys(globalStyles);
-    for (let i = 0; i < selectors.length; i++) {
-        const name = selectors[i];
-        const value = globalStyles[name];
-        injectStyleOnce(name, name, [value], false);
-    }
+    return injectAndGetClassName(styleDefinitions);
 };
 
 export default {
     StyleSheet,
     StyleSheetServer,
     StyleSheetTestUtils,
-    css,
-    cssGlobal
+    css
 };

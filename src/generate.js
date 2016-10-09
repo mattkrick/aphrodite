@@ -1,9 +1,37 @@
 import prefixAll from 'inline-style-prefixer/static';
 
 import {
-    objectToPairs, kebabifyStyleName, recursiveMerge, stringifyValue,
-    importantify, flatten
+    objectToPairs, prefixes, kebabifyStyleName, recursiveMerge, stringifyValue,
+    importantify, flatten, kebabify
 } from './util';
+
+let SSR = false;
+const getBestPrefix = (declaration) => {
+    for (let i = 0; i < prefixes.length; i++) {
+        const prefix = prefixes[i];
+        const prefixedDeclaration = `${prefix}${declaration}`;
+        if (prefixedDeclaration) {
+            return prefixedDeclaration;
+        }
+    }
+    throw new Error(`Cannot find rule ${declaration}. Did you make a typo?`)
+};
+
+const getBrowserProperties = () => {
+    if (!getBrowserProperties.availableStyles) {
+        getBrowserProperties.availableStyles = {};
+        const styles = Object.keys(window.getComputedStyle(document.documentElement, ''));
+        for (let i = 0; i < styles.length; i++) {
+            const style = styles[i];
+            const rule = styles[style];
+            if (isNaN(Number(rule))) {
+                getBrowserProperties.availableStyles[style] = true;
+            }
+        }
+    }
+    return getBrowserProperties.availableStyles;
+};
+
 /**
  * Generate CSS for a selector and some styles.
  *
@@ -12,17 +40,16 @@ import {
  *
  * @param {string} selector: A base CSS selector for the styles to be generated
  *     with.
- * @param {Object} styleTypes: A list of properties of the return type of
+ * @param {Object} rawRulesets: A list of properties of the return type of
  *     StyleSheet.create, e.g. [styles.red, styles.blue].
- * @param stringHandlers: See `generateCSSRuleset`
- * @param useImportant: See `generateCSSRuleset`
+ * @param atRuleHandlers: See `generateCSSRuleset`
  *
  * To actually generate the CSS special-construct-less styles are passed to
  * `generateCSSRuleset`.
  *
  * For instance, a call to
  *
- *     generateCSSInner(".foo", {
+ *     generateCSS(".foo", {
  *       color: "red",
  *       "@media screen": {
  *         height: 20,
@@ -48,38 +75,42 @@ import {
  *     generateCSSRuleset(".foo", { height: 20 }, ...)
  *     generateCSSRuleset(".foo:hover", { backgroundColor: "black" }, ...)
  */
-export const generateCSS = (selector, styleTypes, stringHandlers,
-        useImportant) => {
-    const merged = styleTypes.reduce(recursiveMerge);
+export const generateCSS = (selector, rawRulesets, atRuleHandlers) => {
+    const mergedRawRulesets = recursiveMerge(rawRulesets);
+    return generateCSSRuleset(selector, mergedRawRulesets, atRuleHandlers);
+    // const declarations = {};
+    // const mediaQueries = {};
+    // const pseudoStyles = {};
+    //
+    // const statements = [];
+    // const rawProperties = Object.keys(mergedRawRulesets);
+    // for (let i = 0; i < rawProperties.length; i++) {
+    //     const property = rawProperties[i];
+    //     const value = mergedRawRulesets[property];
+    //     if (value[0] === ':') {
+    //         // values.push()
+    //         // pseudoStyles[value] = merged[value];
+    //     } else if (value[0] === '@') {
+    //         // mediaQueries[value] = merged[value];
+    //     } else {
+    //         statements[i] =
+    //         // statements[key] = merged[key];
+    //     }
+    // }
 
-    const declarations = {};
-    const mediaQueries = {};
-    const pseudoStyles = {};
-
-    Object.keys(merged).forEach(key => {
-        if (key[0] === ':') {
-            pseudoStyles[key] = merged[key];
-        } else if (key[0] === '@') {
-            mediaQueries[key] = merged[key];
-        } else {
-            declarations[key] = merged[key];
-        }
-    });
-
-    return (
-        generateCSSRuleset(selector, declarations, stringHandlers,
-            useImportant) +
-        Object.keys(pseudoStyles).map(pseudoSelector => {
-            return generateCSSRuleset(selector + pseudoSelector,
-                                      pseudoStyles[pseudoSelector],
-                                      stringHandlers, useImportant);
-        }).join("") +
-        Object.keys(mediaQueries).map(mediaQuery => {
-            const ruleset = generateCSS(selector, [mediaQueries[mediaQuery]],
-                stringHandlers, useImportant);
-            return `${mediaQuery}{${ruleset}}`;
-        }).join("")
-    );
+    // return (
+    //     generateCSSRuleset(selector, declarations, atRuleHandlers) +
+    //     Object.keys(pseudoStyles).map(pseudoSelector => {
+    //         return generateCSSRuleset(selector + pseudoSelector,
+    //                                   pseudoStyles[pseudoSelector],
+    //                                   atRuleHandlers);
+    //     }).join("") +
+    //     Object.keys(mediaQueries).map(mediaQuery => {
+    //         const ruleset = generateCSS(selector, [mediaQueries[mediaQuery]],
+    //             atRuleHandlers, useImportant);
+    //         return `${mediaQuery}{${ruleset}}`;
+    //     }).join("")
+    // );
 };
 
 /**
@@ -88,14 +119,13 @@ export const generateCSS = (selector, styleTypes, stringHandlers,
  *
  * See generateCSSRuleset for usage and documentation of paramater types.
  */
-const runStringHandlers = (declarations, stringHandlers) => {
+const appendAtRules = (declarations, atRuleHandlers) => {
     const result = {};
-
     Object.keys(declarations).forEach(key => {
         // If a handler exists for this particular key, let it interpret
         // that value first before continuing
-        if (stringHandlers && stringHandlers.hasOwnProperty(key)) {
-            result[key] = stringHandlers[key](declarations[key]);
+        if (atRuleHandlers && atRuleHandlers.hasOwnProperty(key)) {
+            result[key] = atRuleHandlers[key](declarations[key]);
         } else {
             result[key] = declarations[key];
         }
@@ -117,11 +147,9 @@ const runStringHandlers = (declarations, stringHandlers) => {
  * @param {string} selector: the selector associated with the ruleset
  * @param {Object} declarations: a map from camelCased CSS property name to CSS
  *     property value.
- * @param {Object.<string, function>} stringHandlers: a map from camelCased CSS
+ * @param {Object.<string, function>} atRuleHandlers: a map from camelCased CSS
  *     property name to a function which will map the given value to the value
  *     that is output.
- * @param {bool} useImportant: A boolean saying whether to append "!important"
- *     to each of the CSS declarations.
  * @returns {string} A string of raw CSS.
  *
  * Examples:
@@ -135,50 +163,61 @@ const runStringHandlers = (declarations, stringHandlers) => {
  *    generateCSSRuleset(".blah:hover", { color: "red" })
  *    -> ".blah:hover{color: red}"
  */
-export const generateCSSRuleset = (selector, declarations, stringHandlers,
-        useImportant) => {
-    const handledDeclarations = runStringHandlers(
-        declarations, stringHandlers);
-
-    const prefixedDeclarations = prefixAll(handledDeclarations);
-
-    const prefixedRules = flatten(
-        objectToPairs(prefixedDeclarations).map(([key, value]) => {
-            if (Array.isArray(value)) {
-                // inline-style-prefix-all returns an array when there should be
-                // multiple rules, we will flatten to single rules
-
-                const prefixedValues = [];
-                const unprefixedValues = [];
-
-                value.forEach(v => {
-                  if (v.indexOf('-') === 0) {
-                    prefixedValues.push(v);
-                  } else {
-                    unprefixedValues.push(v);
-                  }
-                });
-
-                prefixedValues.sort();
-                unprefixedValues.sort();
-
-                return prefixedValues
-                  .concat(unprefixedValues)
-                  .map(v => [key, v]);
-            }
-            return [[key, value]];
-        })
-    );
-
-    const rules = prefixedRules.map(([key, value]) => {
-        const stringValue = stringifyValue(key, value);
-        const ret = `${kebabifyStyleName(key)}:${stringValue};`;
-        return useImportant === false ? ret : importantify(ret);
-    }).join("");
-
-    if (rules) {
-        return `${selector}{${rules}}`;
+export const generateCSSRuleset = (selector, mergedRawRulesets, atRuleHandlers, isSSR) => {
+    // const handledDeclarations = appendAtRules(
+    //     mergedRawRulesets, atRuleHandlers);
+    if (isSSR) {
     } else {
-        return "";
+        const validProperties = getBrowserProperties();
+        const rulesets = [];
+        const declarationNames = Object.keys(mergedRawRulesets);
+        for (let i = 0; i < declarationNames.length; i++) {
+            const camelDeclaration = declarationNames[i];
+            // if (camelDeclaration === 'margin') debugger
+            // const declaration = kebabify(camelDeclaration);
+            const value = mergedRawRulesets[camelDeclaration];
+            const stringValue = stringifyValue(camelDeclaration, value);
+            const rule = validProperties[camelDeclaration] ? camelDeclaration : getBestPrefix(camelDeclaration);
+            rulesets[i] = `${kebabifyStyleName(rule)}:${stringValue};`;
+        }
+        const rules = rulesets.join('');
+        return `${selector}{${rules}}`;
     }
+    // debugger
+    // const prefixedDeclarations = prefixAll(handledDeclarations);
+    //
+    // const prefixedRules = flatten(
+    //     objectToPairs(prefixedDeclarations).map(([key, value]) => {
+    //         if (Array.isArray(value)) {
+    //             // inline-style-prefix-all returns an array when there should be
+    //             // multiple rules, we will flatten to single rules
+    //
+    //             const prefixedValues = [];
+    //             const unprefixedValues = [];
+    //
+    //             value.forEach(v => {
+    //               if (v.indexOf('-') === 0) {
+    //                 prefixedValues.push(v);
+    //               } else {
+    //                 unprefixedValues.push(v);
+    //               }
+    //             });
+    //
+    //             prefixedValues.sort();
+    //             unprefixedValues.sort();
+    //
+    //             return prefixedValues
+    //               .concat(unprefixedValues)
+    //               .map(v => [key, v]);
+    //         }
+    //         return [[key, value]];
+    //     })
+    // );
+
+    // const rules = prefixedRules.map(([key, value]) => {
+    //     const stringValue = stringifyValue(key, value);
+    //     const ret = `${kebabifyStyleName(key)}:${stringValue};`;
+    //     return useImportant === false ? ret : importantify(ret);
+    // }).join("");
+
 };
