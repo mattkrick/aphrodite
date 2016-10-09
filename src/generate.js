@@ -2,7 +2,7 @@ import prefixAll from 'inline-style-prefixer/static';
 
 import {
     objectToPairs, kebabifyStyleName, recursiveMerge, stringifyValue,
-    importantify, flatten
+    flatten
 } from './util';
 /**
  * Generate CSS for a selector and some styles.
@@ -15,7 +15,6 @@ import {
  * @param {Object} styleTypes: A list of properties of the return type of
  *     StyleSheet.create, e.g. [styles.red, styles.blue].
  * @param stringHandlers: See `generateCSSRuleset`
- * @param useImportant: See `generateCSSRuleset`
  *
  * To actually generate the CSS special-construct-less styles are passed to
  * `generateCSSRuleset`.
@@ -48,8 +47,7 @@ import {
  *     generateCSSRuleset(".foo", { height: 20 }, ...)
  *     generateCSSRuleset(".foo:hover", { backgroundColor: "black" }, ...)
  */
-export const generateCSS = (selector, styleTypes, stringHandlers,
-        useImportant) => {
+export const generateCSS = (selector, styleTypes, stringHandlers) => {
     const merged = styleTypes.reduce(recursiveMerge);
 
     const declarations = {};
@@ -67,16 +65,15 @@ export const generateCSS = (selector, styleTypes, stringHandlers,
     });
 
     return (
-        generateCSSRuleset(selector, declarations, stringHandlers,
-            useImportant) +
+        generateCSSRuleset(selector, declarations, stringHandlers) +
         Object.keys(pseudoStyles).map(pseudoSelector => {
             return generateCSSRuleset(selector + pseudoSelector,
                                       pseudoStyles[pseudoSelector],
-                                      stringHandlers, useImportant);
+                                      stringHandlers);
         }).join("") +
         Object.keys(mediaQueries).map(mediaQuery => {
             const ruleset = generateCSS(selector, [mediaQueries[mediaQuery]],
-                stringHandlers, useImportant);
+                stringHandlers);
             return `${mediaQuery}{${ruleset}}`;
         }).join("")
     );
@@ -120,23 +117,20 @@ const runStringHandlers = (declarations, stringHandlers) => {
  * @param {Object.<string, function>} stringHandlers: a map from camelCased CSS
  *     property name to a function which will map the given value to the value
  *     that is output.
- * @param {bool} useImportant: A boolean saying whether to append "!important"
- *     to each of the CSS declarations.
  * @returns {string} A string of raw CSS.
  *
  * Examples:
  *
- *    generateCSSRuleset(".blah", { color: "red" })
+ *    generateCSSRuleset(".blah", { color: "red !important" })
  *    -> ".blah{color: red !important;}"
- *    generateCSSRuleset(".blah", { color: "red" }, {}, false)
+ *    generateCSSRuleset(".blah", { color: "red" })
  *    -> ".blah{color: red}"
  *    generateCSSRuleset(".blah", { color: "red" }, {color: c => c.toUpperCase})
  *    -> ".blah{color: RED}"
  *    generateCSSRuleset(".blah:hover", { color: "red" })
  *    -> ".blah:hover{color: red}"
  */
-export const generateCSSRuleset = (selector, declarations, stringHandlers,
-        useImportant) => {
+export const generateCSSRuleset = (selector, declarations, stringHandlers) => {
     const handledDeclarations = runStringHandlers(
         declarations, stringHandlers);
 
@@ -172,8 +166,7 @@ export const generateCSSRuleset = (selector, declarations, stringHandlers,
 
     const rules = prefixedRules.map(([key, value]) => {
         const stringValue = stringifyValue(key, value);
-        const ret = `${kebabifyStyleName(key)}:${stringValue};`;
-        return useImportant === false ? ret : importantify(ret);
+        return `${kebabifyStyleName(key)}:${stringValue};`;
     }).join("");
 
     if (rules) {

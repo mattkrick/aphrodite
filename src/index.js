@@ -73,8 +73,7 @@ const StyleSheetTestUtils = {
 };
 
 const css = (...styleDefinitions) => {
-    const useImportant = true;   // Append !important to all style definitions
-    return injectAndGetClassName(useImportant, styleDefinitions);
+    return injectAndGetClassName(styleDefinitions);
 };
 
 const injectedGlobals = new WeakSet();
