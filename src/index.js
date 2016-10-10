@@ -4,7 +4,7 @@ import {
   reset, startBuffering, flushToString,
   addRenderedClassNames, getRenderedClassNames
 } from './inject';
-import {generateCSS} from './generate';
+import {generateCSSRules} from './generate';
 
 
 const StyleSheet = {
@@ -14,19 +14,15 @@ const StyleSheet = {
     for (let i = 0; i < rawSelectors.length; i++) {
       const rawSelector = rawSelectors[i];
       const rawRuleset = sheetDefinition[rawSelector];
+      const _name = `${rawSelector}_${hashObject(rawRuleset)}`;
+      debugger
       prefixedRuleset[rawSelector] = {
-        _name: `${rawSelector}_${hashObject(rawRuleset)}`,
-        _definition: generateCSS(rawSelector, [rawRuleset])
+        _name,
+        _rules: generateCSSRules(rawSelector, rawRuleset)
       }
     }
-    return mapObj(sheetDefinition, ([key, val]) => {
-      return [key, {
-        // TODO(emily): Make a 'production' mode which doesn't prepend
-        // the class name here, to make the generated CSS smaller.
-        _name: `${key}_${hashObject(val)}`,
-        _definition: val
-      }];
-    });
+    debugger
+    return prefixedRuleset;
   },
 
   rehydrate(renderedClassNames = []) {
@@ -88,11 +84,12 @@ const css = (...styleDefinitions) => {
   return injectAndGetClassName(styleDefinitions);
 };
 
-const cssGlobal = (globalStyles) => {
+const injectGlobal = (globalStyles) => {
   const selectors = Object.keys(globalStyles);
   for (let i = 0; i < selectors.length; i++) {
     const name = selectors[i];
     const value = globalStyles[name];
+
     injectStyleOnce(name, name, [value], false);
   }
 };
@@ -102,5 +99,5 @@ export default {
   StyleSheetServer,
   StyleSheetTestUtils,
   css,
-  cssGlobal
+  injectGlobal
 };

@@ -1,7 +1,7 @@
 // Custom handlers for stringifying CSS values that have side effects
 // (such as fontFamily, which can cause @font-face rules to be injected)
 import {injectGeneratedCSSOnce, injectStyleOnce} from './inject';
-import {generateCSS} from './generate';
+import {generateCSSRules} from './generate';
 import {hashObject} from './util';
 
 // With fontFamily we look for objects that are passed in and interpret
@@ -52,11 +52,11 @@ const animationName = (val) => {
   // name?
   const name = `keyframe_${hashObject(val)}`;
 
-  // Since keyframes need 3 layers of nesting, we use `generateCSS` to
+  // Since keyframes need 3 layers of nesting, we use `generateCSSRules` to
   // build the inner layers and wrap it in `@keyframes` ourselves.
   let finalVal = `@keyframes ${name}{`;
   Object.keys(val).forEach(key => {
-    finalVal += generateCSS(key, [val[key]]);
+    finalVal += generateCSSRules(key, [val[key]]);
   });
   finalVal += '}';
 
@@ -65,7 +65,13 @@ const animationName = (val) => {
   return name;
 };
 
-export default {
-  animationName,
-  fontFamily,
+const media = () => {
+  return null;
 };
+
+export default {
+  animation: animationName,
+  animationName,
+  fontFamily
+};
+

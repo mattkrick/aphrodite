@@ -1,5 +1,5 @@
 import asap from 'asap';
-import {generateCSS} from './generate';
+import {generateCSSRules, aggregateStyles} from './generate';
 import {flattenDeep} from './util';
 
 // The current <style> tag we are inserting into, or null if we haven't
@@ -73,7 +73,7 @@ export const injectGeneratedCSSOnce = (key, generatedCSS) => {
 
 export const injectStyleOnce = (key, selector, definitions) => {
   if (!alreadyInjected[key]) {
-    const generated = generateCSS(selector, definitions);
+    const generated = generateCSSRules(selector, definitions);
 
     injectGeneratedCSSOnce(key, generated);
   }
@@ -141,8 +141,9 @@ export const injectAndGetClassName = (styleDefinitions) => {
   // generate an short, opaque compound className
   // const className = hashObject(validDefinitions.map(s => s._name));
   const className = validDefinitions.map(s => s._name).join("-o_O-");
-  const rawRulesets = validDefinitions.map(d => d._definition);
-  injectGeneratedCSSOnce(className, rawRulesets);
+  const rulesets = validDefinitions.map(d => d._definition);
+  const rules = aggregateStyles(className, rulesets);
+  injectGeneratedCSSOnce(className, rules);
   return className;
 };
 

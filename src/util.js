@@ -1,3 +1,37 @@
+/**
+ * Support style names that may come passed in prefixed by adding permutations
+ * of vendor prefixes. Moz first because it also has Webkit props
+ * Taken from React's CSSProperty.js
+ */
+const prefixes = ['', 'Moz', 'Webkit', 'ms', 'O'];
+
+const getBrowserProperties = () => {
+  if (!getBrowserProperties.availableStyles) {
+    getBrowserProperties.availableStyles = {};
+    const styles = Object.keys(window.getComputedStyle(document.documentElement, ''));
+    for (let i = 0; i < styles.length; i++) {
+      const style = styles[i];
+      const rule = styles[style];
+      if (isNaN(Number(rule))) {
+        getBrowserProperties.availableStyles[style] = true;
+      }
+    }
+  }
+  return getBrowserProperties.availableStyles;
+};
+
+export const maybeVendorPrefix = (declaration) => {
+  const validProperties = getBrowserProperties();
+    for (let i = 0; i < prefixes.length; i++) {
+      const prefix = prefixes[i];
+      const prefixedDeclaration = `${prefix}${declaration}`;
+      if (validProperties[prefixedDeclaration]) {
+        return prefixedDeclaration;
+      }
+    }
+    throw new Error(`Cannot find rule ${declaration}. Did you make a typo?`)
+};
+
 // {K1: V1, K2: V2, ...} -> [[K1, V1], [K2, V2]]
 export const objectToPairs = (obj) => Object.keys(obj).map(key => [key, obj[key]]);
 
@@ -101,13 +135,6 @@ function prefixKey(prefix, key) {
   return prefix + key.charAt(0).toUpperCase() + key.substring(1);
 }
 
-/**
- * Support style names that may come passed in prefixed by adding permutations
- * of vendor prefixes.
- * Taken from React's CSSProperty.js
- */
-var prefixes = ['Webkit', 'ms', 'Moz', 'O'];
-
 // Using Object.keys here, or else the vanilla for-in loop makes IE8 go into an
 // infinite loop, because it iterates over the newly added props too.
 // Taken from React's CSSProperty.js
@@ -117,16 +144,9 @@ Object.keys(isUnitlessNumber).forEach(function(prop) {
   });
 });
 
+// assign px only if necessary
 export const stringifyValue = (key, prop) => {
-  if (typeof prop === "number") {
-    if (isUnitlessNumber[key]) {
-      return "" + prop;
-    } else {
-      return prop + "px";
-    }
-  } else {
-    return prop;
-  }
+  return (typeof prop !== "number" || isUnitlessNumber[key] || prop === 0) ? prop : `${prop}px`;
 };
 
 /**
