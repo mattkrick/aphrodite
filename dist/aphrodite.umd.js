@@ -105,8 +105,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        (0, _inject.reset)();
 	        (0, _inject.startBuffering)();
 	        var html = renderFunc();
-	        var cssContent = (0, _inject.flushToString)();
-	
+	        var cssRules = (0, _inject.flushToString)();
+	        var cssContent = cssRules.map(function (c) {
+	            return c.rule;
+	        }).join('');
 	        return {
 	            html: html,
 	            css: {
@@ -172,7 +174,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, '__esModule', {
-	    value: true
+	  value: true
 	});
 	
 	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
@@ -180,44 +182,44 @@ return /******/ (function(modules) { // webpackBootstrap
 	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 	
 	var objectToPairs = function objectToPairs(obj) {
-	    return Object.keys(obj).map(function (key) {
-	        return [key, obj[key]];
-	    });
+	  return Object.keys(obj).map(function (key) {
+	    return [key, obj[key]];
+	  });
 	};
 	
 	exports.objectToPairs = objectToPairs;
 	// [[K1, V1], [K2, V2]] -> {K1: V1, K2: V2, ...}
 	var pairsToObject = function pairsToObject(pairs) {
-	    var result = {};
-	    pairs.forEach(function (_ref) {
-	        var _ref2 = _slicedToArray(_ref, 2);
+	  var result = {};
+	  pairs.forEach(function (_ref) {
+	    var _ref2 = _slicedToArray(_ref, 2);
 	
-	        var key = _ref2[0];
-	        var val = _ref2[1];
+	    var key = _ref2[0];
+	    var val = _ref2[1];
 	
-	        result[key] = val;
-	    });
-	    return result;
+	    result[key] = val;
+	  });
+	  return result;
 	};
 	
 	var mapObj = function mapObj(obj, fn) {
-	    return pairsToObject(objectToPairs(obj).map(fn));
+	  return pairsToObject(objectToPairs(obj).map(fn));
 	};
 	
 	exports.mapObj = mapObj;
 	// Flattens an array one level
 	// [[A], [B, C, [D]]] -> [A, B, C, [D]]
 	var flatten = function flatten(list) {
-	    return list.reduce(function (memo, x) {
-	        return memo.concat(x);
-	    }, []);
+	  return list.reduce(function (memo, x) {
+	    return memo.concat(x);
+	  }, []);
 	};
 	
 	exports.flatten = flatten;
 	var flattenDeep = function flattenDeep(list) {
-	    return list.reduce(function (memo, x) {
-	        return memo.concat(Array.isArray(x) ? flattenDeep(x) : x);
-	    }, []);
+	  return list.reduce(function (memo, x) {
+	    return memo.concat(Array.isArray(x) ? flattenDeep(x) : x);
+	  }, []);
 	};
 	
 	exports.flattenDeep = flattenDeep;
@@ -225,32 +227,32 @@ return /******/ (function(modules) { // webpackBootstrap
 	var MS_RE = /^ms-/;
 	
 	var kebabify = function kebabify(string) {
-	    return string.replace(UPPERCASE_RE, '-$1').toLowerCase();
+	  return string.replace(UPPERCASE_RE, '-$1').toLowerCase();
 	};
 	var kebabifyStyleName = function kebabifyStyleName(string) {
-	    return kebabify(string).replace(MS_RE, '-ms-');
+	  return kebabify(string).replace(MS_RE, '-ms-');
 	};
 	
 	exports.kebabifyStyleName = kebabifyStyleName;
 	var recursiveMerge = function recursiveMerge(a, b) {
-	    // TODO(jlfwong): Handle malformed input where a and b are not the same
-	    // type.
+	  // TODO(jlfwong): Handle malformed input where a and b are not the same
+	  // type.
 	
-	    if (typeof a !== 'object') {
-	        return b;
+	  if (typeof a !== 'object') {
+	    return b;
+	  }
+	
+	  var ret = _extends({}, a);
+	
+	  Object.keys(b).forEach(function (key) {
+	    if (ret.hasOwnProperty(key)) {
+	      ret[key] = recursiveMerge(a[key], b[key]);
+	    } else {
+	      ret[key] = b[key];
 	    }
+	  });
 	
-	    var ret = _extends({}, a);
-	
-	    Object.keys(b).forEach(function (key) {
-	        if (ret.hasOwnProperty(key)) {
-	            ret[key] = recursiveMerge(a[key], b[key]);
-	        } else {
-	            ret[key] = b[key];
-	        }
-	    });
-	
-	    return ret;
+	  return ret;
 	};
 	
 	exports.recursiveMerge = recursiveMerge;
@@ -259,42 +261,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Taken from React's CSSProperty.js
 	 */
 	var isUnitlessNumber = {
-	    animationIterationCount: true,
-	    borderImageOutset: true,
-	    borderImageSlice: true,
-	    borderImageWidth: true,
-	    boxFlex: true,
-	    boxFlexGroup: true,
-	    boxOrdinalGroup: true,
-	    columnCount: true,
-	    flex: true,
-	    flexGrow: true,
-	    flexPositive: true,
-	    flexShrink: true,
-	    flexNegative: true,
-	    flexOrder: true,
-	    gridRow: true,
-	    gridColumn: true,
-	    fontWeight: true,
-	    lineClamp: true,
-	    lineHeight: true,
-	    opacity: true,
-	    order: true,
-	    orphans: true,
-	    tabSize: true,
-	    widows: true,
-	    zIndex: true,
-	    zoom: true,
+	  animationIterationCount: true,
+	  borderImageOutset: true,
+	  borderImageSlice: true,
+	  borderImageWidth: true,
+	  boxFlex: true,
+	  boxFlexGroup: true,
+	  boxOrdinalGroup: true,
+	  columnCount: true,
+	  flex: true,
+	  flexGrow: true,
+	  flexPositive: true,
+	  flexShrink: true,
+	  flexNegative: true,
+	  flexOrder: true,
+	  gridRow: true,
+	  gridColumn: true,
+	  fontWeight: true,
+	  lineClamp: true,
+	  lineHeight: true,
+	  opacity: true,
+	  order: true,
+	  orphans: true,
+	  tabSize: true,
+	  widows: true,
+	  zIndex: true,
+	  zoom: true,
 	
-	    // SVG-related properties
-	    fillOpacity: true,
-	    floodOpacity: true,
-	    stopOpacity: true,
-	    strokeDasharray: true,
-	    strokeDashoffset: true,
-	    strokeMiterlimit: true,
-	    strokeOpacity: true,
-	    strokeWidth: true
+	  // SVG-related properties
+	  fillOpacity: true,
+	  floodOpacity: true,
+	  stopOpacity: true,
+	  strokeDasharray: true,
+	  strokeDashoffset: true,
+	  strokeMiterlimit: true,
+	  strokeOpacity: true,
+	  strokeWidth: true
 	};
 	
 	/**
@@ -306,7 +308,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * WebkitTransitionDuration
 	 */
 	function prefixKey(prefix, key) {
-	    return prefix + key.charAt(0).toUpperCase() + key.substring(1);
+	  return prefix + key.charAt(0).toUpperCase() + key.substring(1);
 	}
 	
 	/**
@@ -315,26 +317,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * Taken from React's CSSProperty.js
 	 */
 	var prefixes = ['Webkit', 'ms', 'Moz', 'O'];
-	
 	// Using Object.keys here, or else the vanilla for-in loop makes IE8 go into an
 	// infinite loop, because it iterates over the newly added props too.
 	// Taken from React's CSSProperty.js
 	Object.keys(isUnitlessNumber).forEach(function (prop) {
-	    prefixes.forEach(function (prefix) {
-	        isUnitlessNumber[prefixKey(prefix, prop)] = isUnitlessNumber[prop];
-	    });
+	  prefixes.forEach(function (prefix) {
+	    isUnitlessNumber[prefixKey(prefix, prop)] = isUnitlessNumber[prop];
+	  });
 	});
 	
 	var stringifyValue = function stringifyValue(key, prop) {
-	    if (typeof prop === "number") {
-	        if (isUnitlessNumber[key]) {
-	            return "" + prop;
-	        } else {
-	            return prop + "px";
-	        }
-	    } else {
-	        return prop;
-	    }
+	  return typeof prop !== "number" || isUnitlessNumber[key] || prop === 0 ? prop : prop + 'px';
 	};
 	
 	exports.stringifyValue = stringifyValue;
@@ -350,39 +343,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @return {string} Base 36 encoded hash result
 	 */
 	function murmurhash2_32_gc(str) {
-	    var l = str.length;
-	    var h = l;
-	    var i = 0;
-	    var k = undefined;
+	  var l = str.length;
+	  var h = l;
+	  var i = 0;
+	  var k = undefined;
 	
-	    while (l >= 4) {
-	        k = str.charCodeAt(i) & 0xff | (str.charCodeAt(++i) & 0xff) << 8 | (str.charCodeAt(++i) & 0xff) << 16 | (str.charCodeAt(++i) & 0xff) << 24;
+	  while (l >= 4) {
+	    k = str.charCodeAt(i) & 0xff | (str.charCodeAt(++i) & 0xff) << 8 | (str.charCodeAt(++i) & 0xff) << 16 | (str.charCodeAt(++i) & 0xff) << 24;
 	
-	        k = (k & 0xffff) * 0x5bd1e995 + (((k >>> 16) * 0x5bd1e995 & 0xffff) << 16);
-	        k ^= k >>> 24;
-	        k = (k & 0xffff) * 0x5bd1e995 + (((k >>> 16) * 0x5bd1e995 & 0xffff) << 16);
+	    k = (k & 0xffff) * 0x5bd1e995 + (((k >>> 16) * 0x5bd1e995 & 0xffff) << 16);
+	    k ^= k >>> 24;
+	    k = (k & 0xffff) * 0x5bd1e995 + (((k >>> 16) * 0x5bd1e995 & 0xffff) << 16);
 	
-	        h = (h & 0xffff) * 0x5bd1e995 + (((h >>> 16) * 0x5bd1e995 & 0xffff) << 16) ^ k;
+	    h = (h & 0xffff) * 0x5bd1e995 + (((h >>> 16) * 0x5bd1e995 & 0xffff) << 16) ^ k;
 	
-	        l -= 4;
-	        ++i;
-	    }
+	    l -= 4;
+	    ++i;
+	  }
 	
-	    switch (l) {
-	        case 3:
-	            h ^= (str.charCodeAt(i + 2) & 0xff) << 16;
-	        case 2:
-	            h ^= (str.charCodeAt(i + 1) & 0xff) << 8;
-	        case 1:
-	            h ^= str.charCodeAt(i) & 0xff;
-	            h = (h & 0xffff) * 0x5bd1e995 + (((h >>> 16) * 0x5bd1e995 & 0xffff) << 16);
-	    }
+	  switch (l) {
+	    case 3:
+	      h ^= (str.charCodeAt(i + 2) & 0xff) << 16;
+	    case 2:
+	      h ^= (str.charCodeAt(i + 1) & 0xff) << 8;
+	    case 1:
+	      h ^= str.charCodeAt(i) & 0xff;
+	      h = (h & 0xffff) * 0x5bd1e995 + (((h >>> 16) * 0x5bd1e995 & 0xffff) << 16);
+	  }
 	
-	    h ^= h >>> 13;
-	    h = (h & 0xffff) * 0x5bd1e995 + (((h >>> 16) * 0x5bd1e995 & 0xffff) << 16);
-	    h ^= h >>> 15;
+	  h ^= h >>> 13;
+	  h = (h & 0xffff) * 0x5bd1e995 + (((h >>> 16) * 0x5bd1e995 & 0xffff) << 16);
+	  h ^= h >>> 15;
 	
-	    return (h >>> 0).toString(36);
+	  return (h >>> 0).toString(36);
 	}
 	
 	// Hash a javascript object using JSON.stringify. This is very fast, about 3
@@ -394,7 +387,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	// ordering of objects. Ben Alpert says that Facebook depends on this, so we
 	// can probably depend on this too.
 	var hashObject = function hashObject(object) {
-	    return murmurhash2_32_gc(JSON.stringify(object));
+	  return murmurhash2_32_gc(JSON.stringify(object));
 	};
 	
 	exports.hashObject = hashObject;
@@ -403,11 +396,67 @@ return /******/ (function(modules) { // webpackBootstrap
 	// Given a single style rule string like "a: b;", adds !important to generate
 	// "a: b !important;".
 	var importantify = function importantify(string) {
-	    return string.replace(IMPORTANT_RE, function (_, base, important) {
-	        return base + " !important;";
-	    });
+	  return string.replace(IMPORTANT_RE, function (_, base, important) {
+	    return base + " !important;";
+	  });
 	};
+	
 	exports.importantify = importantify;
+	var getBrowserProperties = function getBrowserProperties() {
+	  if (!getBrowserProperties.availableStyles) {
+	    getBrowserProperties.availableStyles = {};
+	    var styles = Object.keys(window.getComputedStyle(document.documentElement, ''));
+	    for (var i = 0; i < styles.length; i++) {
+	      var style = styles[i];
+	      var rule = styles[style];
+	      if (isNaN(Number(rule))) {
+	        getBrowserProperties.availableStyles[style] = style;
+	      }
+	    }
+	  }
+	  return getBrowserProperties.availableStyles;
+	};
+	
+	var stylePrefixes = ['Moz', 'webkit', 'ms', 'O'];
+	var getVendorPrefix = function getVendorPrefix(property) {
+	  var validProperties = getBrowserProperties();
+	  var validatedProp = validProperties[property];
+	  if (validatedProp) {
+	    return validatedProp;
+	  }
+	  var capitalProp = property[0].toUpperCase() + property.substr(1);
+	  for (var i = 0; i < stylePrefixes.length; i++) {
+	    var prefix = stylePrefixes[i];
+	    var prefixedProperty = '' + prefix + capitalProp;
+	    if (validProperties[prefixedProperty]) {
+	      // learn which styles the browser likes
+	      validProperties[validatedProp] = prefixedProperty;
+	      return prefixedProperty;
+	    }
+	  }
+	  // swallow the prop (eg -moz-osx-font-smoothing)
+	  return undefined;
+	};
+	
+	var prefixLocally = function prefixLocally(declarations, useImportant) {
+	  var prefixedRules = [];
+	  var properties = Object.keys(declarations);
+	  var isDangerous = undefined;
+	  for (var i = 0; i < properties.length; i++) {
+	    var property = properties[i];
+	    var value = declarations[property];
+	    var stringValue = stringifyValue(property, value);
+	    var prefixedProperty = getVendorPrefix(property);
+	    if (!prefixedProperty) {
+	      isDangerous = true;
+	    }
+	    var camelProp = prefixedProperty || property;
+	    var ret = kebabifyStyleName(camelProp) + ':' + stringValue + ';';
+	    prefixedRules.push(useImportant === false ? ret : importantify(ret));
+	  }
+	  return { ruleString: prefixedRules.join(''), isDangerous: isDangerous };
+	};
+	exports.prefixLocally = prefixLocally;
 
 /***/ },
 /* 3 */
@@ -420,6 +469,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 	
 	var _asap = __webpack_require__(4);
 	
@@ -435,33 +486,51 @@ return /******/ (function(modules) { // webpackBootstrap
 	// faster.
 	var styleTag = null;
 	
+	// This is the buffer of style rules which have not yet been flushed.
+	var injectionBuffer = [];
+	
+	// externalized try/catch block allows the engine to optimize the caller
+	var tryInsertRule = function tryInsertRule(rule) {
+	    try {
+	        styleTag.sheet.insertRule(rule, styleTag.sheet.rules.length);
+	    } catch (e) {
+	        // user-defined vendor-prefixed styles go here
+	    }
+	};
 	// Inject a string of styles into a <style> tag in the head of the document. This
 	// will automatically create a style tag and then continue to use it for
 	// multiple injections. It will also use a style tag with the `data-aphrodite`
 	// tag on it if that exists in the DOM. This could be used for e.g. reusing the
 	// same style tag that server-side rendering inserts.
-	var injectStyleTag = function injectStyleTag(cssContents) {
-	    if (styleTag == null) {
-	        // Try to find a style tag with the `data-aphrodite` attribute first.
-	        styleTag = document.querySelector("style[data-aphrodite]");
+	var injectStyleTag = function injectStyleTag(cssRules) {
+	    // Try to find a style tag with the `data-aphrodite` attribute first (SSR)
+	    styleTag = styleTag || document.querySelector("style[data-aphrodite]");
 	
-	        // If that doesn't work, generate a new style tag.
-	        if (styleTag == null) {
-	            // Taken from
-	            // http://stackoverflow.com/questions/524696/how-to-create-a-style-tag-with-javascript
-	            var head = document.head || document.getElementsByTagName('head')[0];
-	            styleTag = document.createElement('style');
+	    if (styleTag) {
+	        for (var i = 0; i < cssRules.length; i++) {
+	            var _cssRules$i = cssRules[i];
+	            var isDangerous = _cssRules$i.isDangerous;
+	            var rule = _cssRules$i.rule;
 	
-	            styleTag.type = 'text/css';
-	            styleTag.setAttribute("data-aphrodite", "");
-	            head.appendChild(styleTag);
+	            if (isDangerous) {
+	                tryInsertRule(rule);
+	            } else if (rule) {
+	                styleTag.sheet.insertRule(rule, styleTag.sheet.rules.length);
+	            }
 	        }
-	    }
-	
-	    if (styleTag.styleSheet) {
-	        styleTag.styleSheet.cssText += cssContents;
 	    } else {
-	        styleTag.appendChild(document.createTextNode(cssContents));
+	        // If that doesn't work, generate a new style tag.
+	        // Taken from
+	        // http://stackoverflow.com/questions/524696/how-to-create-a-style-tag-with-javascript
+	        var head = document.head || document.getElementsByTagName('head')[0];
+	        styleTag = document.createElement('style');
+	        styleTag.type = 'text/css';
+	        styleTag.setAttribute("data-aphrodite", "");
+	        var cssContent = cssRules.map(function (c) {
+	            return c.rule;
+	        }).join('');
+	        styleTag.appendChild(document.createTextNode(cssContent));
+	        head.appendChild(styleTag);
 	    }
 	};
 	
@@ -475,9 +544,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    fontFamily: function fontFamily(val) {
 	        if (Array.isArray(val)) {
 	            return val.map(fontFamily).join(",");
-	        } else if (typeof val === "object") {
-	            injectStyleOnce(val.src, "@font-face", [val], false);
-	            return '"' + val.fontFamily + '"';
+	        } else if (val && typeof val === "object") {
+	            var _fontFamily = val.fontFamily;
+	            var fontStyle = val.fontStyle;
+	            var fontWeight = val.fontWeight;
+	
+	            var key = _fontFamily + '-' + (fontWeight || 400) + fontStyle;
+	            injectStyleOnce(key, "@font-face", [val], false);
+	            return _fontFamily;
 	        } else {
 	            return val;
 	        }
@@ -516,13 +590,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	        // Since keyframes need 3 layers of nesting, we use `generateCSS` to
 	        // build the inner layers and wrap it in `@keyframes` ourselves.
-	        var finalVal = '@keyframes ' + name + '{';
-	        Object.keys(val).forEach(function (key) {
-	            finalVal += (0, _generate.generateCSS)(key, [val[key]], stringHandlers, false);
-	        });
-	        finalVal += '}';
+	        var anyIsDangerous = false;
+	        var rules = Object.keys(val).reduce(function (reduction, key) {
+	            var _generateCSS = (0, _generate.generateCSS)(key, [val[key]], stringHandlers, false);
 	
-	        injectGeneratedCSSOnce(name, finalVal);
+	            var isDangerous = _generateCSS.isDangerous;
+	            var rule = _generateCSS.rule;
+	
+	            anyIsDangerous = anyIsDangerous || isDangerous;
+	            return reduction + rule;
+	        }, '');
+	        var finalVal = {
+	            rule: '@keyframes ' + name + '{' + rules + '}',
+	            isDangerous: anyIsDangerous
+	        };
+	        injectGeneratedCSSOnce(name, [finalVal]);
 	
 	        return name;
 	    }
@@ -531,9 +613,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	// This is a map from Aphrodite's generated class names to `true` (acting as a
 	// set of class names)
 	var alreadyInjected = {};
-	
-	// This is the buffer of styles which have not yet been flushed.
-	var injectionBuffer = "";
 	
 	// A flag to tell if we are already buffering styles. This could happen either
 	// because we scheduled a flush call already, so newly added styles will
@@ -554,8 +633,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            isBuffering = true;
 	            (0, _asap2['default'])(flushToStyleTag);
 	        }
-	
-	        injectionBuffer += generatedCSS;
+	        injectionBuffer.push.apply(injectionBuffer, _toConsumableArray(generatedCSS));
 	        alreadyInjected[key] = true;
 	    }
 	};
@@ -570,7 +648,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	exports.injectStyleOnce = injectStyleOnce;
 	var reset = function reset() {
-	    injectionBuffer = "";
+	    injectionBuffer.length = 0;
 	    alreadyInjected = {};
 	    isBuffering = false;
 	    styleTag = null;
@@ -587,16 +665,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.startBuffering = startBuffering;
 	var flushToString = function flushToString() {
 	    isBuffering = false;
-	    var ret = injectionBuffer;
-	    injectionBuffer = "";
+	    var ret = injectionBuffer.slice();
+	    injectionBuffer.length = 0;
 	    return ret;
 	};
 	
 	exports.flushToString = flushToString;
 	var flushToStyleTag = function flushToStyleTag() {
-	    var cssContent = flushToString();
-	    if (cssContent.length > 0) {
-	        injectStyleTag(cssContent);
+	    var cssRules = flushToString();
+	    if (cssRules.length > 0) {
+	        injectStyleTag(cssRules);
 	    }
 	};
 	
@@ -802,9 +880,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	// Safari 6 and 6.1 for desktop, iPad, and iPhone are the only browsers that
 	// have WebKitMutationObserver but not un-prefixed MutationObserver.
-	// Must use `global` instead of `window` to work in both frames and web
+	// Must use `global` or `self` instead of `window` to work in both frames and web
 	// workers. `global` is a provision of Browserify, Mr, Mrs, or Mop.
-	var BrowserMutationObserver = global.MutationObserver || global.WebKitMutationObserver;
+	
+	/* globals self */
+	var scope = typeof global !== "undefined" ? global : self;
+	var BrowserMutationObserver = scope.MutationObserver || scope.WebKitMutationObserver;
 	
 	// MutationObservers are desirable because they have high priority and work
 	// reliably everywhere they are implemented.
@@ -954,12 +1035,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 	
 	Object.defineProperty(exports, '__esModule', {
-	    value: true
+	  value: true
 	});
 	
 	var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; })();
 	
+	var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
 	
 	var _inlineStylePrefixerStatic = __webpack_require__(7);
 	
@@ -1012,28 +1097,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     generateCSSRuleset(".foo:hover", { backgroundColor: "black" }, ...)
 	 */
 	var generateCSS = function generateCSS(selector, styleTypes, stringHandlers, useImportant) {
-	    var merged = styleTypes.reduce(_util.recursiveMerge);
+	  var merged = styleTypes.reduce(_util.recursiveMerge);
+	  var declarations = {};
+	  var mediaQueries = {};
+	  var pseudoStyles = {};
 	
-	    var declarations = {};
-	    var mediaQueries = {};
-	    var pseudoStyles = {};
-	
-	    Object.keys(merged).forEach(function (key) {
-	        if (key[0] === ':') {
-	            pseudoStyles[key] = merged[key];
-	        } else if (key[0] === '@') {
-	            mediaQueries[key] = merged[key];
-	        } else {
-	            declarations[key] = merged[key];
-	        }
+	  Object.keys(merged).forEach(function (key) {
+	    if (key[0] === ':') {
+	      pseudoStyles[key] = merged[key];
+	    } else if (key[0] === '@') {
+	      mediaQueries[key] = merged[key];
+	    } else {
+	      declarations[key] = merged[key];
+	    }
+	  });
+	  // if (Object.keys(merged).join().indexOf('placeholder') !== -1) debugger
+	  var genericRules = generateCSSRuleset(selector, declarations, stringHandlers, useImportant);
+	  var pseudoRules = Object.keys(pseudoStyles).reduce(function (reduction, pseudoSelector) {
+	    var ruleset = generateCSS(selector + pseudoSelector, [pseudoStyles[pseudoSelector]], stringHandlers, useImportant);
+	    var safeSelectors = [':visited', ':focus', ':active', ':hover'];
+	    var safeRuleset = safeSelectors.includes(pseudoSelector) ? ruleset : ruleset.map(function (set) {
+	      return _extends({}, set, { isDangerous: true });
 	    });
-	
-	    return generateCSSRuleset(selector, declarations, stringHandlers, useImportant) + Object.keys(pseudoStyles).map(function (pseudoSelector) {
-	        return generateCSSRuleset(selector + pseudoSelector, pseudoStyles[pseudoSelector], stringHandlers, useImportant);
-	    }).join("") + Object.keys(mediaQueries).map(function (mediaQuery) {
-	        var ruleset = generateCSS(selector, [mediaQueries[mediaQuery]], stringHandlers, useImportant);
-	        return mediaQuery + '{' + ruleset + '}';
-	    }).join("");
+	    reduction.push.apply(reduction, _toConsumableArray(safeRuleset));
+	    return reduction;
+	  }, []);
+	  var mediaRules = Object.keys(mediaQueries).reduce(function (reduction, mediaQuery) {
+	    var ruleset = generateCSS(selector, [mediaQueries[mediaQuery]], stringHandlers, useImportant);
+	    var wrappedRuleset = ruleset.map(function (set) {
+	      return _extends({}, set, {
+	        rule: mediaQuery + '{' + set.rule + '}'
+	      });
+	    });
+	    reduction.push.apply(reduction, _toConsumableArray(wrappedRuleset));
+	    return reduction;
+	  }, []);
+	  return [].concat(_toConsumableArray(genericRules), _toConsumableArray(pseudoRules), _toConsumableArray(mediaRules));
 	};
 	
 	exports.generateCSS = generateCSS;
@@ -1044,19 +1143,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * See generateCSSRuleset for usage and documentation of paramater types.
 	 */
 	var runStringHandlers = function runStringHandlers(declarations, stringHandlers) {
-	    var result = {};
+	  var result = {};
 	
-	    Object.keys(declarations).forEach(function (key) {
-	        // If a handler exists for this particular key, let it interpret
-	        // that value first before continuing
-	        if (stringHandlers && stringHandlers.hasOwnProperty(key)) {
-	            result[key] = stringHandlers[key](declarations[key]);
-	        } else {
-	            result[key] = declarations[key];
-	        }
-	    });
+	  Object.keys(declarations).forEach(function (key) {
+	    // If a handler exists for this particular key, let it interpret
+	    // that value first before continuing
+	    if (stringHandlers && stringHandlers.hasOwnProperty(key)) {
+	      result[key] = stringHandlers[key](declarations[key]);
+	    } else {
+	      result[key] = declarations[key];
+	    }
+	  });
 	
-	    return result;
+	  return result;
 	};
 	
 	/**
@@ -1077,7 +1176,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *     that is output.
 	 * @param {bool} useImportant: A boolean saying whether to append "!important"
 	 *     to each of the CSS declarations.
-	 * @returns {string} A string of raw CSS.
+	 * @returns {Array} Array with 0-to-1 objects: rule: A string of raw CSS, isDangerous: boolean
 	 *
 	 * Examples:
 	 *
@@ -1091,63 +1190,72 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *    -> ".blah:hover{color: red}"
 	 */
 	var generateCSSRuleset = function generateCSSRuleset(selector, declarations, stringHandlers, useImportant) {
-	    var handledDeclarations = runStringHandlers(declarations, stringHandlers);
+	  var handledDeclarations = runStringHandlers(declarations, stringHandlers);
 	
+	  var rules = undefined;
+	  if (typeof window === 'undefined') {
+	    // prefix all if we're on the server
 	    var prefixedDeclarations = (0, _inlineStylePrefixerStatic2['default'])(handledDeclarations);
-	
 	    var prefixedRules = (0, _util.flatten)((0, _util.objectToPairs)(prefixedDeclarations).map(function (_ref) {
-	        var _ref2 = _slicedToArray(_ref, 2);
+	      var _ref2 = _slicedToArray(_ref, 2);
 	
-	        var key = _ref2[0];
-	        var value = _ref2[1];
+	      var key = _ref2[0];
+	      var value = _ref2[1];
 	
-	        if (Array.isArray(value)) {
-	            var _ret = (function () {
-	                // inline-style-prefix-all returns an array when there should be
-	                // multiple rules, we will flatten to single rules
+	      if (Array.isArray(value)) {
+	        var _ret = (function () {
+	          // inline-style-prefix-all returns an array when there should be
+	          // multiple rules, we will flatten to single rules
 	
-	                var prefixedValues = [];
-	                var unprefixedValues = [];
+	          var prefixedValues = [];
+	          var unprefixedValues = [];
 	
-	                value.forEach(function (v) {
-	                    if (v.indexOf('-') === 0) {
-	                        prefixedValues.push(v);
-	                    } else {
-	                        unprefixedValues.push(v);
-	                    }
-	                });
+	          value.forEach(function (v) {
+	            if (v.indexOf('-') === 0) {
+	              prefixedValues.push(v);
+	            } else {
+	              unprefixedValues.push(v);
+	            }
+	          });
 	
-	                prefixedValues.sort();
-	                unprefixedValues.sort();
+	          prefixedValues.sort();
+	          unprefixedValues.sort();
 	
-	                return {
-	                    v: prefixedValues.concat(unprefixedValues).map(function (v) {
-	                        return [key, v];
-	                    })
-	                };
-	            })();
+	          return {
+	            v: prefixedValues.concat(unprefixedValues).map(function (v) {
+	              return [key, v];
+	            })
+	          };
+	        })();
 	
-	            if (typeof _ret === 'object') return _ret.v;
-	        }
-	        return [[key, value]];
+	        if (typeof _ret === 'object') return _ret.v;
+	      }
+	      return [[key, value]];
 	    }));
+	    var ruleString = prefixedRules.map(function (_ref3) {
+	      var _ref32 = _slicedToArray(_ref3, 2);
 	
-	    var rules = prefixedRules.map(function (_ref3) {
-	        var _ref32 = _slicedToArray(_ref3, 2);
+	      var key = _ref32[0];
+	      var value = _ref32[1];
 	
-	        var key = _ref32[0];
-	        var value = _ref32[1];
-	
-	        var stringValue = (0, _util.stringifyValue)(key, value);
-	        var ret = (0, _util.kebabifyStyleName)(key) + ':' + stringValue + ';';
-	        return useImportant === false ? ret : (0, _util.importantify)(ret);
+	      var stringValue = (0, _util.stringifyValue)(key, value);
+	      var ret = (0, _util.kebabifyStyleName)(key) + ':' + stringValue + ';';
+	      return useImportant === false ? ret : (0, _util.importantify)(ret);
 	    }).join("");
-	
-	    if (rules) {
-	        return selector + '{' + rules + '}';
-	    } else {
-	        return "";
-	    }
+	    rules = { ruleString: ruleString };
+	  } else {
+	    rules = (0, _util.prefixLocally)(handledDeclarations, useImportant);
+	  }
+	  if (rules.ruleString) {
+	    return [{
+	      // make it easy to detect empty blocks later
+	      rule: selector + '{' + rules.ruleString + '}',
+	      // protect against pseudo elements like ::moz-input-placeholder
+	      isDangerous: rules.isDangerous
+	    }];
+	  } else {
+	    return [];
+	  }
 	};
 	exports.generateCSSRuleset = generateCSSRuleset;
 
@@ -1177,39 +1285,35 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _capitalizeString2 = _interopRequireDefault(_capitalizeString);
 	
-	var _assign = __webpack_require__(11);
-	
-	var _assign2 = _interopRequireDefault(_assign);
-	
-	var _calc = __webpack_require__(12);
+	var _calc = __webpack_require__(11);
 	
 	var _calc2 = _interopRequireDefault(_calc);
 	
-	var _cursor = __webpack_require__(15);
+	var _cursor = __webpack_require__(14);
 	
 	var _cursor2 = _interopRequireDefault(_cursor);
 	
-	var _flex = __webpack_require__(16);
+	var _flex = __webpack_require__(15);
 	
 	var _flex2 = _interopRequireDefault(_flex);
 	
-	var _sizing = __webpack_require__(17);
+	var _sizing = __webpack_require__(16);
 	
 	var _sizing2 = _interopRequireDefault(_sizing);
 	
-	var _gradient = __webpack_require__(18);
+	var _gradient = __webpack_require__(17);
 	
 	var _gradient2 = _interopRequireDefault(_gradient);
 	
-	var _transition = __webpack_require__(19);
+	var _transition = __webpack_require__(18);
 	
 	var _transition2 = _interopRequireDefault(_transition);
 	
-	var _flexboxIE = __webpack_require__(21);
+	var _flexboxIE = __webpack_require__(20);
 	
 	var _flexboxIE2 = _interopRequireDefault(_flexboxIE);
 	
-	var _flexboxOld = __webpack_require__(22);
+	var _flexboxOld = __webpack_require__(21);
 	
 	var _flexboxOld2 = _interopRequireDefault(_flexboxOld);
 	
@@ -1231,9 +1335,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (value instanceof Object && !Array.isArray(value)) {
 	      // recurse through nested style objects
 	      styles[property] = prefixAll(value);
-	    } else if (Array.isArray(value)) {
-	      // prefix fallback arrays
-	      (0, _assign2.default)(styles, prefixArray(property, value));
 	    } else {
 	      Object.keys(_prefixProps2.default).forEach(function (prefix) {
 	        var properties = _prefixProps2.default[prefix];
@@ -1246,46 +1347,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	  });
 	
 	  Object.keys(styles).forEach(function (property) {
-	    var value = styles[property];
-	    // resolve every special plugins
-	    plugins.forEach(function (plugin) {
-	      return (0, _assign2.default)(styles, plugin(property, value));
+	    [].concat(styles[property]).forEach(function (value, index) {
+	      // resolve every special plugins
+	      plugins.forEach(function (plugin) {
+	        return assignStyles(styles, plugin(property, value));
+	      });
 	    });
 	  });
 	
 	  return styles;
 	}
 	
-	function prefixArray(property, valueArray) {
-	  var result = {};
-	  valueArray.forEach(function (value) {
-	    plugins.forEach(function (plugin) {
-	      var prefixed = plugin(property, value);
-	      if (prefixed) {
-	        Object.keys(prefixed).forEach(function (prop) {
-	          var entry = prefixed[prop];
-	          result[prop] = result[prop] ? mergeValues(result[prop], entry) : entry;
-	        });
-	      }
-	    });
-	    if (!result[property]) {
-	      result[property] = value;
-	    }
-	  });
-	  return result;
-	}
+	function assignStyles(base) {
+	  var extend = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
 	
-	function mergeValues(existing, toMerge) {
-	  var merged = existing;
-	  var valuesToMerge = Array.isArray(toMerge) ? toMerge : [toMerge];
-	  valuesToMerge.forEach(function (value) {
-	    if (Array.isArray(merged) && merged.indexOf(value) === -1) {
-	      merged.push(value);
-	    } else if (merged !== value) {
-	      merged = [merged, value];
+	  Object.keys(extend).forEach(function (property) {
+	    var baseValue = base[property];
+	    if (Array.isArray(baseValue)) {
+	      [].concat(extend[property]).forEach(function (value) {
+	        var valueIndex = baseValue.indexOf(value);
+	        if (valueIndex > -1) {
+	          base[property].splice(valueIndex, 1);
+	        }
+	        base[property].push(value);
+	      });
+	    } else {
+	      base[property] = extend[property];
 	    }
 	  });
-	  return merged;
 	}
 	module.exports = exports['default'];
 
@@ -1298,7 +1387,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.default = { "Webkit": { "transform": true, "transformOrigin": true, "transformOriginX": true, "transformOriginY": true, "backfaceVisibility": true, "perspective": true, "perspectiveOrigin": true, "transformStyle": true, "transformOriginZ": true, "animation": true, "animationDelay": true, "animationDirection": true, "animationFillMode": true, "animationDuration": true, "animationIterationCount": true, "animationName": true, "animationPlayState": true, "animationTimingFunction": true, "appearance": true, "userSelect": true, "fontKerning": true, "textEmphasisPosition": true, "textEmphasis": true, "textEmphasisStyle": true, "textEmphasisColor": true, "boxDecorationBreak": true, "clipPath": true, "maskImage": true, "maskMode": true, "maskRepeat": true, "maskPosition": true, "maskClip": true, "maskOrigin": true, "maskSize": true, "maskComposite": true, "mask": true, "maskBorderSource": true, "maskBorderMode": true, "maskBorderSlice": true, "maskBorderWidth": true, "maskBorderOutset": true, "maskBorderRepeat": true, "maskBorder": true, "maskType": true, "textDecorationStyle": true, "textDecorationSkip": true, "textDecorationLine": true, "textDecorationColor": true, "filter": true, "fontFeatureSettings": true, "breakAfter": true, "breakBefore": true, "breakInside": true, "columnCount": true, "columnFill": true, "columnGap": true, "columnRule": true, "columnRuleColor": true, "columnRuleStyle": true, "columnRuleWidth": true, "columns": true, "columnSpan": true, "columnWidth": true, "flex": true, "flexBasis": true, "flexDirection": true, "flexGrow": true, "flexFlow": true, "flexShrink": true, "flexWrap": true, "alignContent": true, "alignItems": true, "alignSelf": true, "justifyContent": true, "order": true, "transition": true, "transitionDelay": true, "transitionDuration": true, "transitionProperty": true, "transitionTimingFunction": true, "backdropFilter": true, "scrollSnapType": true, "scrollSnapPointsX": true, "scrollSnapPointsY": true, "scrollSnapDestination": true, "scrollSnapCoordinate": true, "shapeImageThreshold": true, "shapeImageMargin": true, "shapeImageOutside": true, "hyphens": true, "flowInto": true, "flowFrom": true, "regionFragment": true, "textSizeAdjust": true, "borderImage": true, "borderImageOutset": true, "borderImageRepeat": true, "borderImageSlice": true, "borderImageSource": true, "borderImageWidth": true, "tabSize": true, "objectFit": true, "objectPosition": true }, "Moz": { "appearance": true, "userSelect": true, "boxSizing": true, "textAlignLast": true, "textDecorationStyle": true, "textDecorationSkip": true, "textDecorationLine": true, "textDecorationColor": true, "tabSize": true, "hyphens": true, "fontFeatureSettings": true, "breakAfter": true, "breakBefore": true, "breakInside": true, "columnCount": true, "columnFill": true, "columnGap": true, "columnRule": true, "columnRuleColor": true, "columnRuleStyle": true, "columnRuleWidth": true, "columns": true, "columnSpan": true, "columnWidth": true }, "ms": { "flex": true, "flexBasis": false, "flexDirection": true, "flexGrow": false, "flexFlow": true, "flexShrink": false, "flexWrap": true, "alignContent": false, "alignItems": false, "alignSelf": false, "justifyContent": false, "order": false, "transform": true, "transformOrigin": true, "transformOriginX": true, "transformOriginY": true, "userSelect": true, "wrapFlow": true, "wrapThrough": true, "wrapMargin": true, "scrollSnapType": true, "scrollSnapPointsX": true, "scrollSnapPointsY": true, "scrollSnapDestination": true, "scrollSnapCoordinate": true, "touchAction": true, "hyphens": true, "flowInto": true, "flowFrom": true, "breakBefore": true, "breakAfter": true, "breakInside": true, "regionFragment": true, "gridTemplateColumns": true, "gridTemplateRows": true, "gridTemplateAreas": true, "gridTemplate": true, "gridAutoColumns": true, "gridAutoRows": true, "gridAutoFlow": true, "grid": true, "gridRowStart": true, "gridColumnStart": true, "gridRowEnd": true, "gridRow": true, "gridColumn": true, "gridColumnEnd": true, "gridColumnGap": true, "gridRowGap": true, "gridArea": true, "gridGap": true, "textSizeAdjust": true } };
+	exports.default = { "Webkit": { "transform": true, "transformOrigin": true, "transformOriginX": true, "transformOriginY": true, "backfaceVisibility": true, "perspective": true, "perspectiveOrigin": true, "transformStyle": true, "transformOriginZ": true, "animation": true, "animationDelay": true, "animationDirection": true, "animationFillMode": true, "animationDuration": true, "animationIterationCount": true, "animationName": true, "animationPlayState": true, "animationTimingFunction": true, "appearance": true, "userSelect": true, "fontKerning": true, "textEmphasisPosition": true, "textEmphasis": true, "textEmphasisStyle": true, "textEmphasisColor": true, "boxDecorationBreak": true, "clipPath": true, "maskImage": true, "maskMode": true, "maskRepeat": true, "maskPosition": true, "maskClip": true, "maskOrigin": true, "maskSize": true, "maskComposite": true, "mask": true, "maskBorderSource": true, "maskBorderMode": true, "maskBorderSlice": true, "maskBorderWidth": true, "maskBorderOutset": true, "maskBorderRepeat": true, "maskBorder": true, "maskType": true, "textDecorationStyle": true, "textDecorationSkip": true, "textDecorationLine": true, "textDecorationColor": true, "filter": true, "fontFeatureSettings": true, "breakAfter": true, "breakBefore": true, "breakInside": true, "columnCount": true, "columnFill": true, "columnGap": true, "columnRule": true, "columnRuleColor": true, "columnRuleStyle": true, "columnRuleWidth": true, "columns": true, "columnSpan": true, "columnWidth": true, "flex": true, "flexBasis": true, "flexDirection": true, "flexGrow": true, "flexFlow": true, "flexShrink": true, "flexWrap": true, "alignContent": true, "alignItems": true, "alignSelf": true, "justifyContent": true, "order": true, "transition": true, "transitionDelay": true, "transitionDuration": true, "transitionProperty": true, "transitionTimingFunction": true, "backdropFilter": true, "scrollSnapType": true, "scrollSnapPointsX": true, "scrollSnapPointsY": true, "scrollSnapDestination": true, "scrollSnapCoordinate": true, "shapeImageThreshold": true, "shapeImageMargin": true, "shapeImageOutside": true, "hyphens": true, "flowInto": true, "flowFrom": true, "regionFragment": true, "textSizeAdjust": true }, "Moz": { "appearance": true, "userSelect": true, "boxSizing": true, "textAlignLast": true, "textDecorationStyle": true, "textDecorationSkip": true, "textDecorationLine": true, "textDecorationColor": true, "tabSize": true, "hyphens": true, "fontFeatureSettings": true, "breakAfter": true, "breakBefore": true, "breakInside": true, "columnCount": true, "columnFill": true, "columnGap": true, "columnRule": true, "columnRuleColor": true, "columnRuleStyle": true, "columnRuleWidth": true, "columns": true, "columnSpan": true, "columnWidth": true }, "ms": { "flex": true, "flexBasis": false, "flexDirection": true, "flexGrow": false, "flexFlow": true, "flexShrink": false, "flexWrap": true, "alignContent": false, "alignItems": false, "alignSelf": false, "justifyContent": false, "order": false, "transform": true, "transformOrigin": true, "transformOriginX": true, "transformOriginY": true, "userSelect": true, "wrapFlow": true, "wrapThrough": true, "wrapMargin": true, "scrollSnapType": true, "scrollSnapPointsX": true, "scrollSnapPointsY": true, "scrollSnapDestination": true, "scrollSnapCoordinate": true, "touchAction": true, "hyphens": true, "flowInto": true, "flowFrom": true, "breakBefore": true, "breakAfter": true, "breakInside": true, "regionFragment": true, "gridTemplateColumns": true, "gridTemplateRows": true, "gridTemplateAreas": true, "gridTemplate": true, "gridAutoColumns": true, "gridAutoRows": true, "gridAutoFlow": true, "grid": true, "gridRowStart": true, "gridColumnStart": true, "gridRowEnd": true, "gridRow": true, "gridColumn": true, "gridColumnEnd": true, "gridColumnGap": true, "gridRowGap": true, "gridArea": true, "gridGap": true, "textSizeAdjust": true } };
 	module.exports = exports["default"];
 
 /***/ },
@@ -1320,27 +1409,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 11 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	// light polyfill for Object.assign
-	
-	exports.default = function (base) {
-	  var extend = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-	  return Object.keys(extend).reduce(function (out, key) {
-	    out[key] = extend[key];
-	    return out;
-	  }, base);
-	};
-	
-	module.exports = exports["default"];
-
-/***/ },
-/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1350,23 +1418,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.default = calc;
 	
-	var _joinPrefixedRules = __webpack_require__(13);
+	var _joinPrefixedValue = __webpack_require__(12);
 	
-	var _joinPrefixedRules2 = _interopRequireDefault(_joinPrefixedRules);
+	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 	
-	var _isPrefixedValue = __webpack_require__(14);
+	var _isPrefixedValue = __webpack_require__(13);
 	
 	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	function calc(property, value) {
-	  if (typeof value === 'string' && value.indexOf('calc(') > -1) {
-	    if ((0, _isPrefixedValue2.default)(value)) {
-	      return;
-	    }
-	
-	    return (0, _joinPrefixedRules2.default)(property, value, function (prefix, value) {
+	  if (typeof value === 'string' && !(0, _isPrefixedValue2.default)(value) && value.indexOf('calc(') > -1) {
+	    return (0, _joinPrefixedValue2.default)(property, value, function (prefix, value) {
 	      return value.replace(/calc\(/g, prefix + 'calc(');
 	    });
 	  }
@@ -1374,7 +1438,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 13 */
+/* 12 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1399,7 +1463,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 14 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1417,7 +1481,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 15 */
+/* 14 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1427,9 +1491,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.default = cursor;
 	
-	var _joinPrefixedRules = __webpack_require__(13);
+	var _joinPrefixedValue = __webpack_require__(12);
 	
-	var _joinPrefixedRules2 = _interopRequireDefault(_joinPrefixedRules);
+	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1442,13 +1506,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function cursor(property, value) {
 	  if (property === 'cursor' && values[value]) {
-	    return (0, _joinPrefixedRules2.default)(property, value);
+	    return (0, _joinPrefixedValue2.default)(property, value);
 	  }
 	}
 	module.exports = exports['default'];
 
 /***/ },
-/* 16 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1469,7 +1533,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 17 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1479,9 +1543,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	});
 	exports.default = sizing;
 	
-	var _joinPrefixedRules = __webpack_require__(13);
+	var _joinPrefixedValue = __webpack_require__(12);
 	
-	var _joinPrefixedRules2 = _interopRequireDefault(_joinPrefixedRules);
+	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -1504,7 +1568,37 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	function sizing(property, value) {
 	  if (properties[property] && values[value]) {
-	    return (0, _joinPrefixedRules2.default)(property, value);
+	    return (0, _joinPrefixedValue2.default)(property, value);
+	  }
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = gradient;
+	
+	var _joinPrefixedValue = __webpack_require__(12);
+	
+	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
+	
+	var _isPrefixedValue = __webpack_require__(13);
+	
+	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var values = /linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient/;
+	
+	function gradient(property, value) {
+	  if (typeof value === 'string' && !(0, _isPrefixedValue2.default)(value) && value.match(values) !== null) {
+	    return (0, _joinPrefixedValue2.default)(property, value);
 	  }
 	}
 	module.exports = exports['default'];
@@ -1518,43 +1612,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.default = gradient;
-	
-	var _joinPrefixedRules = __webpack_require__(13);
-	
-	var _joinPrefixedRules2 = _interopRequireDefault(_joinPrefixedRules);
-	
-	var _isPrefixedValue = __webpack_require__(14);
-	
-	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
-	
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-	
-	var values = /linear-gradient|radial-gradient|repeating-linear-gradient|repeating-radial-gradient/;
-	
-	function gradient(property, value) {
-	  if (typeof value === 'string' && value.match(values) !== null) {
-	    if ((0, _isPrefixedValue2.default)(value)) {
-	      return;
-	    }
-	
-	    return (0, _joinPrefixedRules2.default)(property, value);
-	  }
-	}
-	module.exports = exports['default'];
-
-/***/ },
-/* 19 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-	
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
 	exports.default = transition;
 	
-	var _hyphenateStyleName = __webpack_require__(20);
+	var _hyphenateStyleName = __webpack_require__(19);
 	
 	var _hyphenateStyleName2 = _interopRequireDefault(_hyphenateStyleName);
 	
@@ -1562,7 +1622,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	var _capitalizeString2 = _interopRequireDefault(_capitalizeString);
 	
-	var _isPrefixedValue = __webpack_require__(14);
+	var _isPrefixedValue = __webpack_require__(13);
 	
 	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
 	
@@ -1631,7 +1691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 20 */
+/* 19 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1650,7 +1710,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 21 */
+/* 20 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1687,7 +1747,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = exports['default'];
 
 /***/ },
-/* 22 */
+/* 21 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1715,7 +1775,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	
 	function flexboxOld(property, value) {
-	  if (property === 'flexDirection') {
+	  if (property === 'flexDirection' && typeof value === 'string') {
 	    return {
 	      WebkitBoxOrient: value.indexOf('column') > -1 ? 'vertical' : 'horizontal',
 	      WebkitBoxDirection: value.indexOf('reverse') > -1 ? 'reverse' : 'normal'
