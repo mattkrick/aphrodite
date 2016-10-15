@@ -1,5 +1,5 @@
 {
-  "name": "aphrodite",
+  "name": "aphrodite-local-styles",
   "version": "0.6.0",
   "description": "Inline styles in JS that just work (TM)",
   "keywords": [
