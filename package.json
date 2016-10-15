@@ -11,13 +11,10 @@
   "scripts": {
     "lint": "eslint --fix --cache .",
     "test": "npm run coverage",
-    "posttest": "npm run lint",
     "coverage": "nyc --check-coverage --lines 100 --branches 100 npm run tests",
     "tests": "mocha --compilers js:babel/register tests",
     "tests:watch": "mocha --watch --compilers js:babel/register tests",
-    "build": "babel -d lib/ src",
-    "preversion": "npm test",
-    "version": "npm run build && git add dist"
+    "build": "babel -d lib/ src"
   },
   "repository": {
     "type": "git",
