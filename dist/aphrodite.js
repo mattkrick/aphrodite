@@ -149,11 +149,24 @@ module.exports =
 	    return (0, _inject.injectAndGetClassName)(useImportant, styleDefinitions);
 	};
 
+	var injectedGlobals = new WeakSet();
+	var cssGlobal = function cssGlobal(globalStyles) {
+	    if (injectedGlobals.has(globalStyles)) return;
+	    injectedGlobals.add(globalStyles);
+	    var selectors = Object.keys(globalStyles);
+	    for (var i = 0; i < selectors.length; i++) {
+	        var _name = selectors[i];
+	        var value = globalStyles[_name];
+	        (0, _inject.injectStyleOnce)(_name, _name, [value], false);
+	    }
+	};
+
 	exports['default'] = {
 	    StyleSheet: StyleSheet,
 	    StyleSheetServer: StyleSheetServer,
 	    StyleSheetTestUtils: StyleSheetTestUtils,
-	    css: css
+	    css: css,
+	    cssGlobal: cssGlobal
 	};
 	module.exports = exports['default'];
 
@@ -1276,35 +1289,43 @@ module.exports =
 
 	var _capitalizeString2 = _interopRequireDefault(_capitalizeString);
 
-	var _calc = __webpack_require__(11);
+	var _sortPrefixedStyle = __webpack_require__(11);
+
+	var _sortPrefixedStyle2 = _interopRequireDefault(_sortPrefixedStyle);
+
+	var _position = __webpack_require__(13);
+
+	var _position2 = _interopRequireDefault(_position);
+
+	var _calc = __webpack_require__(14);
 
 	var _calc2 = _interopRequireDefault(_calc);
 
-	var _cursor = __webpack_require__(14);
+	var _cursor = __webpack_require__(17);
 
 	var _cursor2 = _interopRequireDefault(_cursor);
 
-	var _flex = __webpack_require__(15);
+	var _flex = __webpack_require__(18);
 
 	var _flex2 = _interopRequireDefault(_flex);
 
-	var _sizing = __webpack_require__(16);
+	var _sizing = __webpack_require__(19);
 
 	var _sizing2 = _interopRequireDefault(_sizing);
 
-	var _gradient = __webpack_require__(17);
+	var _gradient = __webpack_require__(20);
 
 	var _gradient2 = _interopRequireDefault(_gradient);
 
-	var _transition = __webpack_require__(18);
+	var _transition = __webpack_require__(21);
 
 	var _transition2 = _interopRequireDefault(_transition);
 
-	var _flexboxIE = __webpack_require__(20);
+	var _flexboxIE = __webpack_require__(23);
 
 	var _flexboxIE2 = _interopRequireDefault(_flexboxIE);
 
-	var _flexboxOld = __webpack_require__(21);
+	var _flexboxOld = __webpack_require__(24);
 
 	var _flexboxOld2 = _interopRequireDefault(_flexboxOld);
 
@@ -1313,7 +1334,7 @@ module.exports =
 	// special flexbox specifications
 
 
-	var plugins = [_calc2.default, _cursor2.default, _sizing2.default, _gradient2.default, _transition2.default, _flexboxIE2.default, _flexboxOld2.default, _flex2.default];
+	var plugins = [_position2.default, _calc2.default, _cursor2.default, _sizing2.default, _gradient2.default, _transition2.default, _flexboxIE2.default, _flexboxOld2.default, _flex2.default];
 
 	/**
 	 * Returns a prefixed version of the style object using all vendor prefixes
@@ -1346,7 +1367,7 @@ module.exports =
 	    });
 	  });
 
-	  return styles;
+	  return (0, _sortPrefixedStyle2.default)(styles);
 	}
 
 	function assignStyles(base) {
@@ -1407,13 +1428,78 @@ module.exports =
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
+	exports.default = sortPrefixedStyle;
+
+	var _isPrefixedProperty = __webpack_require__(12);
+
+	var _isPrefixedProperty2 = _interopRequireDefault(_isPrefixedProperty);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function sortPrefixedStyle(style) {
+	  return Object.keys(style).sort(function (left, right) {
+	    if ((0, _isPrefixedProperty2.default)(left) && !(0, _isPrefixedProperty2.default)(right)) {
+	      return -1;
+	    } else if (!(0, _isPrefixedProperty2.default)(left) && (0, _isPrefixedProperty2.default)(right)) {
+	      return 1;
+	    }
+	    return 0;
+	  }).reduce(function (sortedStyle, prop) {
+	    sortedStyle[prop] = style[prop];
+	    return sortedStyle;
+	  }, {});
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+
+	exports.default = function (property) {
+	  return property.match(/^(Webkit|Moz|O|ms)/) !== null;
+	};
+
+	module.exports = exports["default"];
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = position;
+	function position(property, value) {
+	  if (property === 'position' && value === 'sticky') {
+	    return { position: ['-webkit-sticky', 'sticky'] };
+	  }
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	exports.default = calc;
 
-	var _joinPrefixedValue = __webpack_require__(12);
+	var _joinPrefixedValue = __webpack_require__(15);
 
 	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 
-	var _isPrefixedValue = __webpack_require__(13);
+	var _isPrefixedValue = __webpack_require__(16);
 
 	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
 
@@ -1429,7 +1515,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 12 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1454,7 +1540,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 13 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1472,7 +1558,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 14 */
+/* 17 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1482,7 +1568,7 @@ module.exports =
 	});
 	exports.default = cursor;
 
-	var _joinPrefixedValue = __webpack_require__(12);
+	var _joinPrefixedValue = __webpack_require__(15);
 
 	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 
@@ -1503,7 +1589,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 15 */
+/* 18 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1524,7 +1610,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 16 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1534,7 +1620,7 @@ module.exports =
 	});
 	exports.default = sizing;
 
-	var _joinPrefixedValue = __webpack_require__(12);
+	var _joinPrefixedValue = __webpack_require__(15);
 
 	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 
@@ -1565,7 +1651,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 17 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1575,11 +1661,11 @@ module.exports =
 	});
 	exports.default = gradient;
 
-	var _joinPrefixedValue = __webpack_require__(12);
+	var _joinPrefixedValue = __webpack_require__(15);
 
 	var _joinPrefixedValue2 = _interopRequireDefault(_joinPrefixedValue);
 
-	var _isPrefixedValue = __webpack_require__(13);
+	var _isPrefixedValue = __webpack_require__(16);
 
 	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
 
@@ -1595,7 +1681,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 18 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1605,7 +1691,7 @@ module.exports =
 	});
 	exports.default = transition;
 
-	var _hyphenateStyleName = __webpack_require__(19);
+	var _hyphenateStyleName = __webpack_require__(22);
 
 	var _hyphenateStyleName2 = _interopRequireDefault(_hyphenateStyleName);
 
@@ -1613,7 +1699,7 @@ module.exports =
 
 	var _capitalizeString2 = _interopRequireDefault(_capitalizeString);
 
-	var _isPrefixedValue = __webpack_require__(13);
+	var _isPrefixedValue = __webpack_require__(16);
 
 	var _isPrefixedValue2 = _interopRequireDefault(_isPrefixedValue);
 
@@ -1682,26 +1768,29 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 19 */
+/* 22 */
 /***/ function(module, exports) {
 
 	'use strict';
 
 	var uppercasePattern = /[A-Z]/g;
 	var msPattern = /^ms-/;
+	var cache = {};
 
 	function hyphenateStyleName(string) {
-	    return string
-	        .replace(uppercasePattern, '-$&')
-	        .toLowerCase()
-	        .replace(msPattern, '-ms-');
+	    return string in cache
+	    ? cache[string]
+	    : cache[string] = string
+	      .replace(uppercasePattern, '-$&')
+	      .toLowerCase()
+	      .replace(msPattern, '-ms-');
 	}
 
 	module.exports = hyphenateStyleName;
 
 
 /***/ },
-/* 20 */
+/* 23 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1738,7 +1827,7 @@ module.exports =
 	module.exports = exports['default'];
 
 /***/ },
-/* 21 */
+/* 24 */
 /***/ function(module, exports) {
 
 	'use strict';
